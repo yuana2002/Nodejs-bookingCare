@@ -1,3 +1,4 @@
+import { reject } from "lodash";
 import db from "../models/index"
 require('dotenv').config();
 import emailService from './emailService';
@@ -67,6 +68,44 @@ let postAppointment = (data) => {
     })
 }
 
+let postVerifyAppointment = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!data.token || !data.doctorId) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Missing parameter'
+                })
+            } else {
+                let appointment = await db.Booking.findOne({
+                    where: {
+                        doctorId: data.doctorId,
+                        token: data.token,
+                        statusId: 'S1'
+                    },
+                    raw: false
+                })
+                if (appointment) {
+                    appointment.statusId = 'S2';
+                    await appointment.save();
+                    resolve({
+                        errCode: 0,
+                        errMessage: "Update the appointment succeed!"
+                    })
+                } else {
+                    resolve({
+                        errCode: 2,
+                        errMessage: "Appointment has been activated or exists!"
+                    })
+                }
+            }
+        } catch (e) {
+            reject(e);
+        }
+    })
+}
+
 module.exports = {
-    postAppointment: postAppointment
+    postAppointment: postAppointment,
+    postVerifyAppointment: postVerifyAppointment
 }
