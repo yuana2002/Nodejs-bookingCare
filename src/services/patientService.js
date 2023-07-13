@@ -1,24 +1,32 @@
 import db from "../models/index"
 require('dotenv').config();
-import emailService from './emailService'
+import emailService from './emailService';
+import { v4 as uuidv4 } from 'uuid';
 
-//const { reject } = require("lodash")
 
+let buildUrlEmail = (doctorId, token) => {
+    let result = `${process.env.URL_REACT}/verify-booking?token=${token}&doctorId=${doctorId}`
+
+    return result;
+}
 let postAppointment = (data) => {
     return new Promise(async (resolve, reject) => {
         try {
-            if (!data.email || !data.doctorId || !data.timeType || !data.date) {
+            if (!data.email || !data.doctorId || !data.timeType || !data.date || !data.fullName) {
                 resolve({
                     errCode: 1,
                     errMessage: 'Missing parameter'
                 })
             } else {
+
+                let token = uuidv4(); // ⇨ '9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d'
                 await emailService.sendSimpleEmail({
                     receiverEmail: data.email,
-                    patientName: 'bạn',
-                    time: '8:00 - 9:00 Chủ nhật, 16/7/2023',
-                    doctorName: "Loca",
-                    redirectLink: 'https://bookingcare.vn/'
+                    patientName: data.fullName,
+                    time: data.timeString,
+                    doctorName: data.doctorName,
+                    language: data.language,
+                    redirectLink: buildUrlEmail(data.doctorId, token)
                 })
 
                 //upsert patient
@@ -40,7 +48,8 @@ let postAppointment = (data) => {
                             doctorId: data.doctorId,
                             patientId: user[0].id,
                             date: data.date,
-                            timeType: data.timeType
+                            timeType: data.timeType,
+                            token: token
                         },
 
                     })

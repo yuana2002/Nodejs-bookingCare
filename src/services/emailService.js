@@ -20,7 +20,14 @@ let sendSimpleEmail = async (dataSend) => {
         from: '"Quoc trinh 👻" <trinhhuuquoc36@gmail.com>', // sender address
         to: dataSend.receiverEmail, // list of receivers
         subject: "Thông tin đặt lịch khám bệnh", // Subject line
-        html: `
+        html: getBodyHTMLEmail(dataSend), // html body
+    });
+}
+let getBodyHTMLEmail = (dataSend) => {
+    let result = ''
+    if (dataSend.language === 'vi') {
+        result =
+            `
         <h3>Xin chào ${dataSend.patientName} !</h3>
         <p>Bạn nhận được email này vì đã đặt lịch khám bệnh trên web bookingcare</p>
         <p>Thông tin đặt lịch khám bệnh:</p>
@@ -32,12 +39,27 @@ let sendSimpleEmail = async (dataSend) => {
         <a href=${dataSend.redirectLink} target="_blank">Click here</a>
         </div>
         <div>Cảm ơn bạn đã đặt lịch!</div>
-        `, // html body
-    });
+        `
+
+    }
+    if (dataSend.language === 'en') {
+        result =
+            `
+        <h3>Dear! ${dataSend.patientName} !</h3>
+        <p>You received this email because you booked an appointment on bookingcare website</p>
+        <p>Information to schedule an appointment:</p>
+        <div><b>Time: ${dataSend.time}</b></div>
+        <div><b>Doctor: ${dataSend.doctorName}</b></div>
+
+        <p>Please click confirm below to complete the booking procedure</p>
+        <div>
+        <a href=${dataSend.redirectLink} target="_blank">Click here</a>
+        </div>
+        <div>Thank you for your appointment!</div>
+        `
+    }
+    return result;
 }
-
-
-
 
 
 
